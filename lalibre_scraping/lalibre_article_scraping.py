@@ -2,7 +2,6 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup as bs
 import ssl
-import json
 import re
 ssl._create_default_https_context = ssl._create_unverified_context
 
