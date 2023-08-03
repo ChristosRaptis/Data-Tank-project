@@ -1,68 +1,52 @@
-import itertools
-from bs4 import BeautifulSoup
-from concurrent.futures import ThreadPoolExecutor
-from tqdm.contrib.concurrent import thread_map
-from functools import partial
+import requests
+import pandas as pd
+import requests
+from bs4 import BeautifulSoup as bs
 
 
-def get_title(soup): # Extract title 
-    return soup.find_all('title')[0].text.split('|')[0].strip()
+def fetch_cookie(url):
+    session = requests.Session()
+    cookie = session.get(url).cookies
+    return cookie
 
-def get_text(soup): # Extract the article's paragraphs
-    paragraphs = ''
-    p_intro = soup.find_all('p', {"class": "artstyle__intro"}) # article intro
-    if p_intro:
-        paragraphs  += p_intro[0].text.strip()
-    p_tags = soup.find_all('p', {"class": "artstyle__paragraph"})
-    for parag in p_tags:
-        paragraphs += parag.text.strip() # adding article's paragraphs
-    return paragraphs
 
-def get_date(soup): # Extract the published date
-    script = soup.find('script', {"type": "application/ld+json"})
-    data = json.loads(script.text, strict=False)
-    return data['@graph'][1]['datePublished']
-    
-def get_links(feeds_url): # Extract links from news feed
-    page_divs = requests.get(feeds_url).content
-    soup = BeautifulSoup(page_divs, "html.parser")
-    links = []
-    all_links = soup.find_all("loc")
-    for link in all_links:
-        links.append(link.text)
-    return links
+def fetch_title(url):
+    response = requests.get(url)
+    soup = bs(response.content, "html.parser")
+    h1_tag = soup.find("h1")
+    if h1_tag:
+        text = h1_tag.get_text(strip=True)
+        return text
+    else:
+        return ""
 
-def get_article(url, session):
 
-    try:
-        page_html = session.get(url).content
-        soup = BeautifulSoup(page_html, "html.parser")
-        page_type = soup.find_all('span', {"class": "artstyle__labels__label"})
+def fetch_article(url):
+    response = requests.get(url)
+    soup = bs(response.content, "html.parser")
+    elements = soup.find_all("p")
+    text_list = [element.get_text() for element in elements]
+    return "\n".join(text_list)
 
-        if (page_type[0].text == 'Cartoon'):
-            return None
-        else:
-            article_title = get_title(soup)
-            article_text = get_text(soup)
-            published_date = get_date(soup)
-            row = [[url,article_title,article_text,published_date,'NL']]
-            df = pd.DataFrame(row,columns = ["Source_url", "article_title", "article_text","published_date","language"])
-        
-        return df
-    
-    except Exception as e:
-        print(type(e))
-        return e
+
+def find_published_date(url):
+    response = requests.get(url, cookies=fetch_cookie(url))
+    soup = bs(response.content, "html.parser")
+    published_time = soup.find("meta", property="article:published_time")
+    published_date = published_time["content"]
+    return published_date
+
+
+def main():
+    sitemaps = pd.read_xml("https://www.hln.be/sitemap-news.xml")
+    df = sitemaps.drop(["news", "image", "lastmod"], axis=1)
+    df.rename(columns={"loc": "source_url"}, inplace=True)
+    df["published_date"] = df["source_url"].apply(find_published_date)
+    df["article_title"] = df["source_url"].apply(find_title_article)
+    df["article_text"] = df["source_url"].apply(find_article)
+    df = df.loc[:, ["source_url", "article_title", "article_text", "published_date"]]
+    df.to_csv("../hln_scrapper/Data/hln_articles.csv")
+
 
 if __name__ == "__main__":
-
-    feeds_url = "https://www.hln.be/sitemap-news.xml"
-    links  = get_links(feeds_url)
-
-    with requests.Session() as session:
-        news_feed = pd.concat(df for df in thread_map(partial(get_article, session=session), links) 
-                               if isinstance(df, pd.DataFrame))
-    
-    
-    
-    news_feed.to_csv("hln_scrapper\Data\")
+    main()
