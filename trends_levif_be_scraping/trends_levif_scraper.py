@@ -29,13 +29,13 @@ def find_article_text(url: str) -> str:
     return article_text
 
 
-def find_published_date(url: str) -> str:
-    response = requests.get(url)
-    soup = bs(response.content, "html.parser")
-    script = soup.find('script', {"type": "application/ld+json"})
-    data = json.loads(script.text, strict=False)
-    published_date = data['datePublished']
-    return published_date
+# def find_published_date(url: str) -> str:
+#     response = requests.get(url)
+#     soup = bs(response.content, "html.parser")
+#     script = soup.find('script', {"type": "application/ld+json"})
+#     data = json.loads(script.text, strict=False)
+#     published_date = data['datePublished']
+#     return published_date
 
 
 # Fetch sitemap
