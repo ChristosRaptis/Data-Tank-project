@@ -56,7 +56,7 @@ def get_article(url, session):
 
 if __name__ == "__main__":
 
-    feeds_url = 'https://www.demorgen.be/sitemaps/news.xml'
+    feeds_url = "https://www.hln.be/sitemap-news.xml"
     links  = get_links(feeds_url)
 
     with requests.Session() as session:
@@ -65,4 +65,4 @@ if __name__ == "__main__":
     
     
     
-    news_feed.to_csv("Demorgen.csv")
+    news_feed.to_csv("hln_scrapper\Data\")
