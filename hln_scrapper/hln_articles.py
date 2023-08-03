@@ -1,59 +1,68 @@
-"""
-Scrape "https://trends.levif.be/post-sitemap134.xml to get
-the url, ttile, text and date of each article
-"""
-
-import pandas as pd
-import requests
-from bs4 import BeautifulSoup as bs
-import json
-
-# Use the below import only if you get a Certificate error in Mac
-# import ssl
-# ssl._create_default_https_context = ssl._create_unverified_context
+import itertools
+from bs4 import BeautifulSoup
+from concurrent.futures import ThreadPoolExecutor
+from tqdm.contrib.concurrent import thread_map
+from functools import partial
 
 
-def find_article_title(url: str) -> str:
-    response = requests.get(url, cookies=fetch_cookie(url))
-    soup = bs(response.content, "html.parser")
-    article_title = soup.find("h1").text
-    return article_title
+def get_title(soup): # Extract title 
+    return soup.find_all('title')[0].text.split('|')[0].strip()
 
+def get_text(soup): # Extract the article's paragraphs
+    paragraphs = ''
+    p_intro = soup.find_all('p', {"class": "artstyle__intro"}) # article intro
+    if p_intro:
+        paragraphs  += p_intro[0].text.strip()
+    p_tags = soup.find_all('p', {"class": "artstyle__paragraph"})
+    for parag in p_tags:
+        paragraphs += parag.text.strip() # adding article's paragraphs
+    return paragraphs
 
-def fetch_cookie(url):
-    session = requests.Session()
-    cookie = session.get(url).cookies
-    return cookie
+def get_date(soup): # Extract the published date
+    script = soup.find('script', {"type": "application/ld+json"})
+    data = json.loads(script.text, strict=False)
+    return data['@graph'][1]['datePublished']
+    
+def get_links(feeds_url): # Extract links from news feed
+    page_divs = requests.get(feeds_url).content
+    soup = BeautifulSoup(page_divs, "html.parser")
+    links = []
+    all_links = soup.find_all("loc")
+    for link in all_links:
+        links.append(link.text)
+    return links
 
+def get_article(url, session):
 
-def find_article_text(url: str) -> str:
-    response = requests.get(url, cookies=fetch_cookie(url))
-    soup = bs(response.content, "html.parser")
-    paragraphs = [p for p in soup.find_all("div", attrs={"class": "paywalled"})]
-    for paragraph in paragraphs:
-        article_text = "".join(paragraph.text).lstrip()
-        return article_text
+    try:
+        page_html = session.get(url).content
+        soup = BeautifulSoup(page_html, "html.parser")
+        page_type = soup.find_all('span', {"class": "artstyle__labels__label"})
 
+        if (page_type[0].text == 'Cartoon'):
+            return None
+        else:
+            article_title = get_title(soup)
+            article_text = get_text(soup)
+            published_date = get_date(soup)
+            row = [[url,article_title,article_text,published_date,'NL']]
+            df = pd.DataFrame(row,columns = ["Source_url", "article_title", "article_text","published_date","language"])
+        
+        return df
+    
+    except Exception as e:
+        print(type(e))
+        return e
 
-# Fetch sitemap
-sitemap = pd.read_xml("https://www.hln.be/sitemap-news.xml")
-df = sitemap.head(3)
+if __name__ == "__main__":
 
-# Keep only the 'loc' and 'lastmod' columns and rename them
-df = df.drop(["image"], axis=1)
-df.rename(columns={"loc": "source_url", "lastmod": "last_modified_date"}, inplace=True)
+    feeds_url = 'https://www.demorgen.be/sitemaps/news.xml'
+    links  = get_links(feeds_url)
 
-# Keep only the date portion of the 'last_modified_date' column
-# df["last_modified_date"].replace({r"T.+": ""}, inplace=True, regex=True)
-
-# Add 'article_title' column
-df["article_title"] = df["source_url"].apply(find_article_title)
-
-# Add 'article_text' column
-df["article_text"] = df["source_url"].apply(find_article_text)
-
-# Rearange coluln order
-df = df.loc[:, ["source_url", "article_title", "article_text", "last_modified_date"]]
-
-# export to csv
-df.to_csv("trends_levif_be_scraping/data/trends_levif.csv")
+    with requests.Session() as session:
+        news_feed = pd.concat(df for df in thread_map(partial(get_article, session=session), links) 
+                               if isinstance(df, pd.DataFrame))
+    
+    
+    
+    news_feed.to_csv("Demorgen.csv")
