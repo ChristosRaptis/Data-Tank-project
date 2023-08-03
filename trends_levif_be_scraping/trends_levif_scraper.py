@@ -29,20 +29,12 @@ def find_article_text(url: str) -> str:
     return article_text
 
 
-# def find_published_date(url: str) -> str:
-#     response = requests.get(url)
-#     soup = bs(response.content, "html.parser")
-#     script = soup.find('script', {"type": "application/ld+json"})
-#     data = json.loads(script.text, strict=False)
-#     published_date = data['datePublished']
-#     return published_date
-
-
 # Fetch sitemap
 sitemap = pd.read_xml("https://trends.levif.be/post-sitemap134.xml")
+df = sitemap.head(3)
 
 # Keep only the 'loc' and 'lastmod' columns and rename them
-df = sitemap.drop(["image"], axis=1)
+df = df.drop(["image"], axis=1)
 df.rename(columns={"loc": "source_url",
           "lastmod": "last_modified_date"}, inplace=True)
 
@@ -56,7 +48,8 @@ df['article_title'] = df['source_url'].apply(find_article_title)
 df['article_text'] = df['source_url'].apply(find_article_text)
 
 # Rearange coluln order
-# df = df.loc[:, ['source_url', 'article_title', 'article_text', 'published_date', 'last_modified_date']]
+df = df.loc[:, ['source_url', 'article_title',
+                'article_text',  'last_modified_date']]
 
 # export to csv
-df.to_csv('data/trends_levif.csv')
+df.to_csv('trends_levif_be_scraping/data/trends_levif.csv')
