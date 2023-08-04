@@ -44,7 +44,7 @@ def main():
     sitemaps = pd.read_xml("https://www.hln.be/sitemap-news.xml")
     df = sitemaps.drop(["news", "image", "lastmod"], axis=1)
     df.rename(columns={"loc": "source_url"}, inplace=True)
-    df["published_date"] = df["source_url"].    (
+    df["published_date"] = df["source_url"].progress_apply(
         functools.partial(find_published_date, session=session)
     )
     df["article_title"] = df["source_url"].progress_apply(
@@ -54,10 +54,8 @@ def main():
         functools.partial(fetch_article, session=session)
     )
     df = df.loc[:, ["source_url", "article_title", "article_text", "published_date"]]
-    df.to_csv("../hln_scrapper/Data/hln_articles.csv")
+    df.to_csv("hln_articles.csv")
 
 
 if __name__ == "__main__":
     main()
-
-
