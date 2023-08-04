@@ -18,8 +18,8 @@ def main():
         df['published_date'] = df['source_url'].progress_apply(functools.partial(find_published_date, session=session))
         df['article_title'] = df['source_url'].progress_apply(functools.partial(find_article_title, session=session))
         df['article_text'] = df['source_url'].progress_apply(functools.partial(find_article_text, session=session))
-        df = df.loc[:, ['source_url', 'article_title', 'article_text', 'published_date', 'last_modified_date']]
-        df.to_csv('lalibre_articles.csv')
+        df = df.loc[:, ['source_url', 'article_title', 'article_text', 'published_date']]
+        df.to_csv('levif_news_articles.csv')
 
 def find_article_title(url: str, session = None) -> str:
     response = session.get(url)
@@ -42,8 +42,8 @@ def find_published_date(url:str, session = None) -> str:
     accessing_list = data["@graph"]
     accessing_dict = accessing_list[0]
     published_date = accessing_dict["datePublished"]
-    date_pattern = r"\d{2}-\d{2}-\d{4}" 
-    date_match = re.search(date_pattern, data)
+    date_pattern = r"\d{4}-\d{2}-\d{2}" 
+    date_match = re.search(date_pattern, published_date)
     date = date_match.group()
     day, month, year = date.split("-")
     date = f"{year}-{month}-{day}"  
