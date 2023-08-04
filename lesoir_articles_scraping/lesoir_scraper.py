@@ -16,18 +16,20 @@ ssl._create_default_https_context = ssl._create_unverified_context
 
 start_time = time.perf_counter()
 
-
-def find_article_title(url: str) -> str:
+def get_soup(url:str):
     response = requests.get(url)
     soup = bs(response.content, "html.parser")
+    return soup
+
+def find_article_title(url: str) -> str:
+    soup = get_soup(url)
     article_title = soup.find("h1").text
     return article_title
 
 
 # selector for geeko.lesoir.be urls
 def geeko_selector(url: str) -> tuple:
-    response = requests.get(url)
-    soup = bs(response.content, "html.parser")
+    soup = get_soup(url)
     div = soup.find("div", attrs={"class": "post-content-area"})
     paragraphs = div.find_all("p")
     if "Suivez Geeko sur Facebook" in paragraphs[-1].text:
@@ -38,8 +40,7 @@ def geeko_selector(url: str) -> tuple:
 
 # selector for sosoir.lesoir.be urls
 def sosoir_selector(url: str) -> tuple:
-    response = requests.get(url)
-    soup = bs(response.content, "html.parser")
+    soup = get_soup(url)
     h2 = soup.find("h2", attrs={"class": "chapeau"}).text.strip()
     div = soup.find("div", attrs={"id": "artBody"})
     paragraphs = div.find_all("p")
@@ -51,8 +52,7 @@ def sosoir_selector(url: str) -> tuple:
 
 # selector for www.lesoir.be and soirmag.lesoir.be urls
 def lesoirmag_selector(url: str) -> tuple:
-    response = requests.get(url)
-    soup = bs(response.content, "html.parser")
+    soup = get_soup(url)
     article = soup.find("article", attrs={"class": "r-article"})
     paragraphs = article.find_all("p")
     if "www.soirmag.be" in paragraphs[-1].text:
@@ -75,8 +75,7 @@ def find_article_text(url: str) -> str:
 
 
 def find_published_date(url: str) -> str:
-    response = requests.get(url)
-    soup = bs(response.content, "html.parser")
+    soup = get_soup(url)
     script = soup.find("script", {"type": "application/ld+json"})
     data = json.loads(script.text, strict=False)
     try:
@@ -87,8 +86,7 @@ def find_published_date(url: str) -> str:
 
 
 print("Creating list of urls of news page ...")
-response = requests.get("https://www.lesoir.be/18/sections/le-direct")
-soup = bs(response.content, "html.parser")
+soup = get_soup("https://www.lesoir.be/18/sections/le-direct")
 urls = []
 base_url = "https://www.lesoir.be"
 links = soup.select("h3 > a")

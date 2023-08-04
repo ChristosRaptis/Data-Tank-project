@@ -6,7 +6,6 @@ import time
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup as bs
-import json
 
 # Use the below import only if you get a Certificate error in Mac
 import ssl
@@ -23,7 +22,10 @@ start_time = time.perf_counter()
 def find_article_title(url: str) -> str:
     response = requests.get(url)
     soup = bs(response.content, "html.parser")
-    article_title = soup.find("h1").text
+    try:
+        article_title = soup.find("h1").text
+    except:
+        article_title = soup.find("h2").text   
     return article_title
 
 
