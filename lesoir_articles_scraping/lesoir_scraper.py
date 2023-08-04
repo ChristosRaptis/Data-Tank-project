@@ -111,7 +111,7 @@ print("Adding language column to dataframe ...")
 df["language"] = "fr"
 
 print("Extracting data to lesoir_articles.csv ...")
-df.to_csv("data/lesoir_articles.csv")
+df.to_csv("lesoir_articles.csv")
 
 end_time = time.perf_counter()
 print(round(end_time - start_time, 2), "seconds")

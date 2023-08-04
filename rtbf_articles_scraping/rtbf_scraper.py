@@ -77,7 +77,7 @@ print(" Rearranging column order ...")
 df = df.loc[:, ["source_url", "article_title", "article_text", "date", "language"]]
 
 print("Extracting to rtbf_articles.csv ...")
-df.to_csv("data/rtbf_articles.csv")
+df.to_csv("rtbf_articles.csv")
 
 end_time = time.perf_counter()
 print(round(end_time - start_time, 2), "seconds")
