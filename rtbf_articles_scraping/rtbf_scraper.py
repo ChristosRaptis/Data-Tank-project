@@ -6,14 +6,16 @@ import time
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup as bs
+import ssl # Use this import only if you get a Certificate error in Mac
+from pymongo import MongoClient
+from tqdm import tqdm
 
-# Use the below import only if you get a Certificate error in Mac
-import ssl
+tqdm.pandas()
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
-
 start_time = time.perf_counter()
+
 
 
 def find_article_title(url: str) -> str:
