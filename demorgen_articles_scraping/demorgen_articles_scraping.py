@@ -66,4 +66,4 @@ if __name__ == "__main__":
     
     
     
-    news_feed.to_csv("demorgen_articles_scraping/Demorgen.csv")
+    news_feed.to_csv("Demorgen.csv")
