@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup as bs
 import json
 from tqdm import tqdm 
 import functools
+import pymongo
 
 tqdm.pandas()
 
@@ -51,29 +52,43 @@ def scrape_articles(file_name: str = "trends_levif.csv"):
     # Fetch sitemap
     session = requests.Session()
     df = pd.read_xml("https://trends.levif.be/news-sitemap.xml")
-    # df = df.iloc[0:3]
+    df = df.iloc[0:1]
 
     # Keep only the 'loc' and 'lastmod' columns and rename them
     # df = df.drop(["image"], axis=1)
-    df.rename(columns={"loc": "source_url"}, inplace=True)
+    df.rename(columns={"loc": "url"}, inplace=True)
 
     # Keep only the date portion of the 'last_modified_date' column
     # df["last_modified_date"].replace({r"T.+": ""}, inplace=True, regex=True)
 
     # Add 'article_title' column
-    df["article_title"] = df["source_url"].progress_apply(functools.partial(find_article_title, session=session))
+    df["title"] = df["url"].progress_apply(functools.partial(find_article_title, session=session))
 
     # Add 'article_text' column
-    df["article_text"] = df["source_url"].progress_apply(functools.partial(find_article_text, session=session))
+    df["text"] = df["url"].progress_apply(functools.partial(find_article_text, session=session))
 
-    df["publication_date"] = df["source_url"].progress_apply(functools.partial(release_date, session=session))
+    df["date"] = df["url"].progress_apply(functools.partial(release_date, session=session))
 
     # Rearange coluln order
-    df = df.loc[:, ["source_url", "article_title",
-                    "article_text", "publication_date"]]
+    df = df.loc[:, ["url", "date", "text", "title"]]
 
     # export to csv
-    df.to_csv(f"{file_name}")
+    #df.to_csv(f"{file_name}")
+    #mongodb_url = "mongodb://host.docker.internal:27017/"
+    mongodb_url = "mongodb://bouman:80um4N!@ec2-15-188-255-64.eu-west-3.compute.amazonaws.com:27017/"
+    
+    database_name = "bouman_datatank"
+    collection_name = "articles"
+    print(df)
+    data_to_insert = df.to_dict(orient='records')
+    print(data_to_insert)
+    client = pymongo.MongoClient(mongodb_url)
+    database = client[database_name]
+    collection = database[collection_name]
+
+    collection.insert_many(data_to_insert)
+
+    client.close()
 
 
 scrape_articles()
