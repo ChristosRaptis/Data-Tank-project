@@ -12,4 +12,4 @@ RUN mkdir /app
 COPY . /app
 WORKDIR /app
 RUN pip install -r requirements.txt
-CMD [ "python", "trends_levif_scraper.py"]
+CMD [ "python", "trends_levif_scraper_mongo.py"]
