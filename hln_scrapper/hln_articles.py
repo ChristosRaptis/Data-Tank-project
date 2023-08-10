@@ -50,7 +50,7 @@ def get_article(link, session):
     elements = soup.find_all("p")
     if elements :
         text_list = [element.get_text() for element in elements]
-        container["article"] = "\n".join(text_list)
+        container["text"] = "\n".join(text_list)
     else :
         print("no articles")
 
@@ -88,6 +88,7 @@ def mangodb_connection(articles):
         if not collection.find_one({"url": {"$eq": article["url"]}}):
             collection.insert_one(article)
     # collection.insert_many(articles)
+
 
 def main():
     """input xml sitemaps to be read,
