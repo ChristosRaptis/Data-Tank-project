@@ -32,6 +32,8 @@ def get_article(link, session):
         print(response.status_code)
         return 
     soup = bs(response.content, "html.parser")
+
+    container["source"] = XML_URL.split(".")[2]
     
     container["url"] = link
 

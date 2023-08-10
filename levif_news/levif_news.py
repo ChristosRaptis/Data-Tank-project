@@ -33,6 +33,8 @@ def get_article(link, session):
         return 
     
     soup = bs(response.content, "html.parser")
+
+    container["source"] = XML_URL.split(".")[1]
     
     container["url"] = link
 
