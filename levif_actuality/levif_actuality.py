@@ -14,7 +14,7 @@ load_dotenv()
 
 XML_URL = "https://datanews.levif.be/news-sitemap.xml"
 
-JSON_FILEPATH = os.path.join('.', "lecho","my_json.json")
+JSON_FILEPATH = os.path.join('.', "levif_actuality","my_json.json")
 
 def get_links(url, session):
     """will get all links from sitemap"""
