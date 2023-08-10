@@ -3,6 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 import pymongo
 from datetime import datetime
+load_dotenv()
 
 sitemap_url_vrt = "https://www.vrt.be/vrtnws/nl.news-sitemap.xml"
 
@@ -70,7 +71,7 @@ if __name__ == "__main__":
     sitemap_data_vrt = extract_sitemap_data(sitemap_url_vrt)
 
   
-    mongodb_url = "mongodb://bouman:80um4N!@ec2-15-188-255-64.eu-west-3.compute.amazonaws.com:27017/"
+    mongodb_url = os.getenv("MONGODB_URL")
     database_name = "bouman_datatank"
     collection_name = "articles"
     client = pymongo.MongoClient(mongodb_url)
