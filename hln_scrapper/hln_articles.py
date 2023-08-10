@@ -101,7 +101,7 @@ def main():
         fetch_cookie("https://www.hln.be", session)
         links = get_links(XML_URL, session)
         articles = get_articles(links, session)
-    # save_json(container)
+    # save_json(articles)
     mangodb_connection(articles)
 
 if __name__ == "__main__":
