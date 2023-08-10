@@ -3,4 +3,4 @@ RUN mkdir /app
 COPY . /app
 WORKDIR /app
 RUN pip install -r requirements.txt
-CMD [ "python", "lalibre_articles.py"]
+CMD [ "python", "sudinfo_article_scraping.py"]
