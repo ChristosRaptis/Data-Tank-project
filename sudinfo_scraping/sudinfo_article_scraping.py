@@ -21,11 +21,11 @@ def main():
         df.rename(columns={"loc": "url"}, inplace=True)
         extracted_data = thread_map(functools.partial(extract_content, session=session), df["url"], max_workers=4)
         
-        extracted_df = pd.DataFrame(list(extracted_data), columns=["title", "article", "date"])
+        extracted_df = pd.DataFrame(list(extracted_data), columns=["title", "text", "date"])
         
         df = pd.concat([df, extracted_df], axis=1)
 
-        df = df.loc[:, ["url","title","article","date"]]
+        df = df.loc[:, ["url","title","text","date"]]
 
         mongodb_url = os.getenv("MONGODB_URI")
         database_name = "bouman_datatank"
@@ -39,7 +39,7 @@ def main():
                 article = {
                     "url": row["url"],
                     "title": row["title"],
-                    "article": row["article"],
+                    "text": row["text"],
                     "date": row["date"]
                 }
                 collection.insert_one(article)
