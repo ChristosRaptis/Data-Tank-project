@@ -5,6 +5,7 @@ import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 import re
 from tqdm import tqdm
+from tqdm.contrib.concurrent import thread_map
 import functools
 import os
 from dotenv import load_dotenv
@@ -19,7 +20,7 @@ def main():
         sitemap = pd.read_xml("https://www.lalibre.be/arc/outboundfeeds/sitemap-news/?outputType=xml")
         df = sitemap.drop(["news", "image"], axis=1)
         df.rename(columns={"loc": "url"}, inplace=True)
-        extracted_data = df["url"].progress_apply(functools.partial(extract_content, session=session))
+        extracted_data = thread_map(functools.partial(extract_content, session=session), df["url"], max_workers=4)
         
         extracted_df = pd.DataFrame(list(extracted_data), columns=["title", "article", "date"])
         
@@ -30,12 +31,21 @@ def main():
         mongodb_url = os.getenv("MONGODB_URI")
         database_name = "bouman_datatank"
         collection_name = "articles"
-        data_to_insert = df.to_dict(orient="records")
         client = pymongo.MongoClient(mongodb_url)
         database = client[database_name]
         collection = database[collection_name]
-        collection.insert_many(data_to_insert)
-
+        for _, row in df.iterrows():
+            existing_article = collection.find_one({"url": row["url"]})
+            if existing_article is None:
+                article = {
+                    "url": row["url"],
+                    "title": row["title"],
+                    "article": row["article"],
+                    "date": row["date"]
+                }
+                collection.insert_one(article)
+            else:
+                print(f"Article with URL {row['url']} already exists in the database.")
 
 def extract_content(url: str, session=None):
     response = session.get(url)
