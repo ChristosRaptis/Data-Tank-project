@@ -22,18 +22,7 @@ dag = DAG(
 
 dop = DockerOperator(
     docker_url='tcp://docker-proxy:2375',
-    image='scapper_vrtnews_airflow:latest',
-    network_mode='bridge',
-    task_id='task_scraper_vrt',
-    environment={
-        'MONGODB_URL': "{{var.value.mongo_url}}"
-    },
-    dag=dag,
-)
-
-dop2 = DockerOperator(
-    docker_url='tcp://docker-proxy:2375',
-    image='scrapper_lavenir_airflow:latest',
+    image='sivasankari92/scrapper_lavenir_airflow:latest',
     network_mode='bridge',
     task_id='task_scraper_lavenir',
     environment={
@@ -42,21 +31,32 @@ dop2 = DockerOperator(
     dag=dag,
 )
 
-dop3 = DockerOperator(
+dop2 = DockerOperator(
     docker_url='tcp://docker-proxy:2375',
-    image='bevov/mongo:latest',
+    image='sivasankari92/scrapper_vrt_airflow1:latest',
     network_mode='bridge',
-    task_id='task_scraper_levif',
+    task_id='task_scraper_vrt',
     environment={
         'MONGODB_URL': "{{var.value.mongo_url}}"
     },
     dag=dag,
 )
-dop4= DockerOperator(
+dop3 = DockerOperator(
     docker_url='tcp://docker-proxy:2375',
-    image='paulstrazzulla/app:latest',
+    image='sivasankari92/scrapper_dhnet_airflow:latest',
     network_mode='bridge',
-    task_id='task_scraper_hln',
+    task_id='task_scraper_dhnet',
+    environment={
+        'MONGODB_URL': "{{var.value.mongo_url}}"
+    },
+    dag=dag,
+)
+
+dop4 = DockerOperator(
+    docker_url='tcp://docker-proxy:2375',
+    image='sivasankari92/scrapper_tijd_airflow:latest',
+    network_mode='bridge',
+    task_id='task_scraper_tijd',
     environment={
         'MONGODB_URL': "{{var.value.mongo_url}}"
     },
