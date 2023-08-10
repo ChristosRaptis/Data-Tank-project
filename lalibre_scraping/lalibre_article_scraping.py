@@ -17,16 +17,18 @@ tqdm.pandas()
 
 def main():
     with requests.Session() as session:
-        sitemap = pd.read_xml("https://www.lalibre.be/arc/outboundfeeds/sitemap-news/?outputType=xml")
+        XML_URL = "https://www.lalibre.be/arc/outboundfeeds/sitemap-news/?outputType=xml"
+        sitemap = pd.read_xml(XML_URL)
         df = sitemap.drop(["news", "image"], axis=1)
         df.rename(columns={"loc": "url"}, inplace=True)
+        df["source"] = XML_URL.split(".")[1]
         extracted_data = thread_map(functools.partial(extract_content, session=session), df["url"], max_workers=4)
         
         extracted_df = pd.DataFrame(list(extracted_data), columns=["title", "text", "date"])
         
         df = pd.concat([df, extracted_df], axis=1)
 
-        df = df.loc[:, ["url","title","text","date"]]
+        df = df.loc[:, ["url", "source", "title","text","date"]]
 
         mongodb_url = os.getenv("MONGODB_URI")
         database_name = "bouman_datatank"
@@ -40,6 +42,7 @@ def main():
             if existing_article is None:
                 article = {
                     "url": row["url"],
+                    "source": row["source"],
                     "title": row["title"],
                     "text": row["text"],
                     "date": row["date"]
