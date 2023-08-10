@@ -10,6 +10,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dateutil import parser
 import os
 import pymongo
+from dotenv import load_dotenv
 
 
 def get_title(soup) -> str:  # Extract title
@@ -101,6 +102,7 @@ if __name__ == "__main__":
 
 news_feed_dict = news_feed.to_dict("records")
 
+load_dotenv()
 mongodb_url = os.getenv("MONGODB_URL")
 database_name = "bouman_datatank"
 collection_name = "articles"
