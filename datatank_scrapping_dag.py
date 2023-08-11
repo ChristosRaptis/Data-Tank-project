@@ -62,3 +62,23 @@ dop4 = DockerOperator(
     },
     dag=dag,
 )
+dop5 = DockerOperator(
+    docker_url='tcp://docker-proxy:2375',
+    image='christosraptis/rtbf_scraper:latest',
+    network_mode='bridge',
+    task_id='task_scraper_rtbf',
+    environment={
+        'MONGODB_URL': "{{var.value.mongo_url}}"
+    },
+    dag=dag,
+)
+dop6 = DockerOperator(
+    docker_url='tcp://docker-proxy:2375',
+    image='christosraptis/lesoir_scraper:latest',
+    network_mode='bridge',
+    task_id='task_scraper_lesoir',
+    environment={
+        'MONGODB_URL': "{{var.value.mongo_url}}"
+    },
+    dag=dag,
+)
