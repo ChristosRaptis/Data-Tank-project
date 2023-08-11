@@ -42,6 +42,9 @@ df.rename(columns={"loc": "url", "lastmod": "date"}, inplace=True)
 print("Adding language column ...")
 df["language"] = "fr"
 
+print("Adding source column ...")
+df["source"] = "rtbf"
+
 print("Creating list of articles ...")
 articles = df.to_dict(orient="records")
 

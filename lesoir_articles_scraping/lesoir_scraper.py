@@ -101,6 +101,7 @@ for link in links:
     dict["title"] = find_article_title(link_soup)
     print(" Adding language ...")
     dict["language"] = "fr"
+    dict["source"] = "lesoir"
     articles.append(dict)
     print(f"The list has {len(articles)} articles")
 print("List completed.")

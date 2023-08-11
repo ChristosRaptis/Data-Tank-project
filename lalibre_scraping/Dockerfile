@@ -1,6 +1,6 @@
-FROM python:3.11-slim
+FROM python:3.11
 RUN mkdir /app
 COPY . /app
 WORKDIR /app
 RUN pip install -r requirements.txt
-CMD [ "python", "rtbf_scraper.py"]
+CMD [ "python", "lalibre_articles.py"]
