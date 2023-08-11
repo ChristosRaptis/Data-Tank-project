@@ -82,3 +82,13 @@ dop6 = DockerOperator(
     },
     dag=dag,
 )
+dop7 = DockerOperator(
+    docker_url='tcp://docker-proxy:2375',
+    image='bevov/mongo:latest',
+    network_mode='bridge',
+    task_id='task_scraper_levif',
+    environment={
+        'MONGODB_URI': "{{var.value.mongo_url}}"
+    },
+    dag=dag,
+)
