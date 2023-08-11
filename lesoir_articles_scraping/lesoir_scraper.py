@@ -106,7 +106,7 @@ for link in links:
 print("List completed.")
 
 print("Connecting to database ...")
-client = MongoClient(os.getenv("MONGODB_URI"))
+client = MongoClient(os.getenv("MONGODB_URL"))
 db = client["bouman_datatank"]
 collection = db["articles"]
 

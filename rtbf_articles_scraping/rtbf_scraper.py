@@ -56,7 +56,7 @@ for index, article in enumerate(articles, start=1):
     article["text"] = find_article_text(soup)
 
 print("Connecting to database ...")
-client = MongoClient(os.getenv("MONGODB_URI"))
+client = MongoClient(os.getenv("MONGODB_URL"))
 db = client["bouman_datatank"]
 collection = db["articles"]
 
