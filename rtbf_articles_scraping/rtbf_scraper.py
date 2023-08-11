@@ -42,6 +42,9 @@ df.rename(columns={"loc": "url", "lastmod": "date"}, inplace=True)
 print("Adding language column ...")
 df["language"] = "fr"
 
+print("Adding source column ...")
+df["source"] = "rtbf"
+
 print("Creating list of articles ...")
 articles = df.to_dict(orient="records")
 
@@ -56,7 +59,7 @@ for index, article in enumerate(articles, start=1):
     article["text"] = find_article_text(soup)
 
 print("Connecting to database ...")
-client = MongoClient(os.getenv("MONGODB_URI"))
+client = MongoClient(os.getenv("MONGODB_URL"))
 db = client["bouman_datatank"]
 collection = db["articles"]
 
